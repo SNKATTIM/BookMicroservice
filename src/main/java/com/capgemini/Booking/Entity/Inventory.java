@@ -14,24 +14,22 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
 @Entity
-public class Inventory 
-{
+public class Inventory {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "inventory_id")
 	long inventory_id;
-	
+
 	long flightNumber;
 	String flightDate;
-	int available;
-	
-	 public boolean isAvailable(int count){
-	    	return ((available-count) >5);
-	    }
+	long available;
 
-	   public int getBookableInventory(){
-		   return available - 5;
-	   }
+	
+	  public boolean isAvailable(int count){ return ((available-count) >=0); }
+	  
+		/*
+		 * public int getBookableInventory(){ return available - 5; }
+		 */	 
 
 	public Inventory(long flightNumber, String flightDate, int available) {
 		super();
@@ -52,7 +50,7 @@ public class Inventory
 		return flightDate;
 	}
 
-	public int getAvailable() {
+	public long getAvailable() {
 		return available;
 	}
 
@@ -68,7 +66,7 @@ public class Inventory
 		this.flightDate = flightDate;
 	}
 
-	public void setAvailable(int available) {
+	public void setAvailable(long available) {
 		this.available = available;
 	}
 
@@ -81,8 +79,5 @@ public class Inventory
 		return "Inventory [inventory_id=" + inventory_id + ", flightNumber=" + flightNumber + ", flightDate="
 				+ flightDate + ", available=" + available + "]";
 	}
-	   
 
-
-	
 }

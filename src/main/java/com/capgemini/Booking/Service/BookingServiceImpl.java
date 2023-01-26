@@ -12,6 +12,8 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -37,7 +39,7 @@ import com.capgemini.Booking.VO.Fare;
 public class BookingServiceImpl implements IBookingService
 {
 	
-	private static final String FareURL = "http://localhost:8080/api/fare/getfare";
+	private static final String FareURL = "http://localhost:8081/api/fare/getfare";
 	
 	@Autowired
 	private BookingReposoitory bookingReposoitory;
@@ -51,22 +53,22 @@ public class BookingServiceImpl implements IBookingService
 	@Autowired
 	private RestTemplate restTemplate;
 	
-	
-	
-	
 	@Override
 	public Book getBookingID(long id) {
-		// TODO Auto-generated method stub
+		
+		Book books = bookingReposoitory.findById(id).get();
+		books.setTotalFare(books.getFare()*books.getPassenger().size());
+		      
 		return bookingReposoitory.findById(new Long(id)).get();
+		
+		
 		}
 
 	@Override
 	public List<Book> getAllBookingDetails() {
-		// TODO Auto-generated method stub
+		
 		return bookingReposoitory.findAll();
 	}
-
-	
 
 
 	@Override
@@ -82,9 +84,10 @@ public class BookingServiceImpl implements IBookingService
 	}
 
 	@Override
-	public Passenger getPassenger() {
-		// TODO Auto-generated method stub
-		return getPassenger();
+	public List<Passenger> getPassenger() {
+		
+
+		return passengerRepository.findAll();
 	}
 
 	@Override
@@ -120,48 +123,58 @@ public class BookingServiceImpl implements IBookingService
 	}
 
 	@Override
-	public BookAndFlight getFlightwithbook(long bookId) {
+	public BookAndFlight getFlightwithbook(long flightNumber) {
 		BookAndFlight vo = new BookAndFlight();
-		Book book = bookingReposoitory.findByflightNumber(bookId);
-		Flight flight = restTemplate.getForObject("http://SEARCH/api/flight/flightNumber/" +book.getFlightNumber(), Flight.class);
+		Book book = bookingReposoitory.findByflightNumber(flightNumber);
+		book.setTotalFare(book.getFare()*book.getPassenger().size());
+		Flight flight = restTemplate.getForObject("http://localhost:8090/api/flight/flightNumber/" +book.getFlightNumber(), Flight.class);
+	    
 		vo.setBook(book);
 		vo.setFlight(flight);
 		return vo;
 	}
 	
 	@Override
-	public long book(Book record) {
-	
-		//logger.info("calling fares to get fare");
-		//call fares to get fare
-		Fare fare = restTemplate.getForObject("http://localhost:8080/api/fare/getfare/" +record.getFlightNumber() +"/" +record.getFlightDate(),Fare.class);
-		//logger.info("calling fares to get fare "+ fare);
-		//check fare
+	public ResponseEntity<?> book(Book record) throws BookingException {
+		//Fare fare = restTemplate.getForObject("http://localhost:8080/api/fare/getfare/" +record.getFlightNumber() +"/" +record.getFlightDate(),Fare.class);		
+		/*  if (record.getFare()==fare.getFlightFare()) throw new
+		  BookingException("fare is tampered");*/
+		Fare fare=restTemplate.getForObject("http://localhost:8081/api/fare/check/" +record.getFlightNumber() +"/"+record.getOrigin() +"/"+record.getDestination() +"/"+record.getFlightDate(), Fare.class);
 		
-		
-		  if (record.getFare()==fare.getFlightFare()) throw new
-		  BookingException("fare is tampered");
+		  if(fare.equals(null))
+		  {
+			  return new ResponseEntity<>("details doesnt meet the Requirement",HttpStatus.BAD_REQUEST);
+		  }
+
+		  if(record.getPassenger().isEmpty()) {
+			  throw new BookingException("Passenger are empty");
+		  }
+		  record.setFare(fare.getFlightFare());
+
 		 
-		//logger.info("calling inventory to get inventory");
-		//check inventory
 		Inventory inventory = inventoryRepository.findByFlightNumberAndFlightDate(record.getFlightNumber(),record.getFlightDate());
 		if(!inventory.isAvailable(record.getPassenger().size())){
 			throw new BookingException("No more seats avaialble");
 		}
-		//logger.info("successfully checked inventory" + inventory);
-		//logger.info("calling inventory to update inventory");
-		//update inventory
-		inventory.setAvailable(inventory.getAvailable() - record.getPassenger().size());
+	
+		int lo=record.getPassenger().size();
+		inventory.setAvailable(inventory.getAvailable()-lo);
+		//long avl=inventory.getAvailable()-lo;
+         System.out.println(lo);
 		inventoryRepository.saveAndFlush(inventory);
-		//logger.info("sucessfully updated inventory");
-		//save booking
+		inventory.getAvailable();
+	
 		record.setStatus(BookingStatus.BOOKING_CONFIRMED); 
 		List<Passenger> passengers = record.getPassenger();
 		passengers.forEach(passenger -> passenger.setBook(record));
 		record.setBookingDate(new Date());
 		long id=  bookingReposoitory.save(record).getBookId();
-		//logger.info("Successfully saved booking");	
-		return id;
+		long passengersize= record.getPassenger().size();
+		long Pfare=record.getFare()*passengersize;
+		record.setTotalFare(Pfare);
+		Flight flight = restTemplate.getForObject("http://localhost:8090/api/flight/update/" +record.getFlightNumber() +"/" +record.getFlightDate() +"/" +inventory.getAvailable() , Flight.class);
+
+		return new ResponseEntity<>("bookingid=" +id +" "  + "and" + " " +"Fare=" +Pfare +" " +"and passengers="+lo,HttpStatus.ACCEPTED);
 	}
 
 	
@@ -177,6 +190,14 @@ public class BookingServiceImpl implements IBookingService
 		   Optional<Book> enti=bookingReposoitory.findById(id);
 	        if(enti.isPresent())
 	        {
+	        	Book newone= enti.get();
+	        	int size = newone.getPassenger().size();
+	        	long fnumber=newone.getFlightNumber();
+	        	Inventory inv=inventoryRepository.findByFlightNumber(fnumber);
+	        	long inventory=inv.getAvailable();
+	        	inv.setAvailable(inventory+size);
+	    		Flight flight = restTemplate.getForObject("http://localhost:8090/api/flight/update/" +newone.getFlightNumber() +"/" +newone.getFlightDate() +"/" +inv.getAvailable() , Flight.class);
+
 	            bookingReposoitory.deleteById(id);
 	            return "successfully deleted";
 	        }

@@ -10,8 +10,7 @@ import com.capgemini.Booking.Entity.Inventory;
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, Long>{
 
-
-
 	Inventory findByFlightNumberAndFlightDate(long flightNumber, String flightDate);
+	Inventory findByFlightNumber(long flightNumber);
 	
 }

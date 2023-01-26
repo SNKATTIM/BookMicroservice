@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.capgemini.Booking.Entity.Book;
 import com.capgemini.Booking.Entity.Inventory;
 import com.capgemini.Booking.Entity.Passenger;
+import com.capgemini.Booking.Exception.BookingException;
 import com.capgemini.Booking.Service.BookingServiceImpl;
 import com.capgemini.Booking.VO.BookAndFlight;
 
@@ -30,13 +32,27 @@ import com.capgemini.Booking.VO.BookAndFlight;
 @RequestMapping("api/book")
 public class BookingController 
 {
+	
+	
 	@Autowired
 	BookingServiceImpl bookingServiceImpl;
 	
 	@GetMapping("/get/{id}")
-	Book getbookingbyid(@PathVariable long id)
+	ResponseEntity<?> getbookingbyid(@PathVariable long id)
 	{
-		return bookingServiceImpl.getBookingID(id);
+		//if(bookingServiceImpl.getBookingID(id).equals(null))
+		try
+		{
+			return new ResponseEntity<>(bookingServiceImpl.getBookingID(id),HttpStatus.OK);
+		}
+       catch(Exception e)
+		{
+	    return new ResponseEntity<>("Enter the Correct Id",HttpStatus.BAD_REQUEST);
+
+		}
+		
+
+		
 	}
 	
 	@RequestMapping(value = "/getall",method = RequestMethod.GET)
@@ -57,8 +73,9 @@ public class BookingController
 	List<Inventory> getinventory(){
 		return bookingServiceImpl.getInventory();
 	}
+	
 	@GetMapping("/getpassenger")
-	Passenger getpassenger(){
+	List<Passenger> getpassenger(){
 		return bookingServiceImpl.getPassenger();
 	}
 	
@@ -74,10 +91,16 @@ public class BookingController
     }
 	
 	@DeleteMapping("/deletebyid/{id}")
-    public String Deletebyid(@PathVariable ("id") long id)
+    public ResponseEntity<?> Deletebyid(@PathVariable ("id") long id)
     {
+		try {
         bookingServiceImpl.Deletebyid(id);
-        return "deleted";
+        return new ResponseEntity<>("Deleted:"+id,HttpStatus.OK);
+		}
+		catch(Exception e)
+		{
+			return new ResponseEntity<>("Please enter the correct the Booking Id",HttpStatus.BAD_REQUEST);
+		}
     }
 	
 	@PostMapping("/addbooking")
@@ -88,9 +111,16 @@ public class BookingController
     }
 	
 	@RequestMapping(value="/create" , method = RequestMethod.POST)
-	long book(@RequestBody Book record){
+	public ResponseEntity<?> book(@RequestBody Book record) throws BookingException{
+		try {
 		System.out.println("Booking Request" + record); 
-		return bookingServiceImpl.book(record);
+		
+		return new ResponseEntity<>( bookingServiceImpl.book(record),HttpStatus.OK);
+		}
+		catch(BookingException e)
+		{
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
 	}
 	
 	

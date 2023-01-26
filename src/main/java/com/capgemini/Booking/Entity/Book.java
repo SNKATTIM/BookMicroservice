@@ -5,10 +5,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -30,7 +28,6 @@ import lombok.Setter;
 import jakarta.persistence.JoinColumn;
 
 @Entity
-
 public class Book 
 {
 	@Id
@@ -45,15 +42,23 @@ public class Book
 	private String flightDate;
 	private Date bookingDate;
 	private long fare;
-	
+	private long TotalFare; 
 	private String status;
 	
 	
 	@OneToMany(fetch=FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "book", orphanRemoval = true)
 	private  List<Passenger> passenger= new ArrayList<Passenger>();
+	
 
-	
-	
+	public long getTotalFare() {
+		return TotalFare;
+	}
+
+
+	public void setTotalFare(long totalFare) {
+		this.TotalFare = totalFare;
+	}
+
 
 	public Book() {
 		super();
@@ -93,9 +98,6 @@ public class Book
 	public String getStatus() {
 		return status;
 	}
-
-
-
 
 	public List<Passenger> getPassenger() {
 		return passenger;
@@ -137,7 +139,7 @@ public class Book
 	}
 
 
-	public Book(long flightNumber, String origin, String destination, String flightDate, Date bookingDate, long fare) {
+	public Book(long flightNumber, String origin, String destination, String flightDate, Date bookingDate) {
 		super();
 		this.flightNumber = flightNumber;
 		this.origin = origin;
@@ -146,11 +148,9 @@ public class Book
 		this.bookingDate = bookingDate;
 		this.fare = fare;
 		this.status = status;
+		this.TotalFare=TotalFare;
 				
 	}
-
-
-
 
 	public void setPassenger(List<Passenger> passenger) {
 		this.passenger = passenger;
@@ -170,9 +170,13 @@ public class Book
 	@Override
 	public String toString() {
 		return "Book [BookId=" + BookId + ", flightNumber=" + flightNumber + ", origin=" + origin + ", destination="
-				+ destination + ", flightDate=" + flightDate + ", bookingDate=" + bookingDate + ", passenger="
-				+ passenger + "]";
+				+ destination + ", flightDate=" + flightDate + ", bookingDate=" + bookingDate + ", TotalFare="
+				+ TotalFare + ", passenger=" + passenger + "]";
 	}
+	
+
+
+	
 
 
 	

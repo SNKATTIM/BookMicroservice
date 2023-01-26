@@ -16,4 +16,5 @@ public interface BookingReposoitory extends JpaRepository<Book, Long>{
 
 	
 	Book findByflightNumber(long flightNumber);
+	
 }

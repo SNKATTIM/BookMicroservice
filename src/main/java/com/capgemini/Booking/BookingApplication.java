@@ -40,7 +40,7 @@ public class BookingApplication implements CommandLineRunner {
 	@Autowired
 	PassengerRepository repo;
 
-	
+
 	  
 	  @Bean
 	  public RestTemplate restTemplate() { return new RestTemplate();
@@ -50,16 +50,16 @@ public class BookingApplication implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		// TODO Auto-generated method stub
 
-		Inventory[] ins = { new Inventory(26333, "2023-01-16", 200), new Inventory(90001, "2023-01-16", 200),
-				new Inventory(92331, "2023-01-16", 200), new Inventory(1001, "2023-01-17", 200),
-				new Inventory(10031, "2023-01-16", 200), new Inventory(30009, "2023-01-16", 200),
-				new Inventory(30044, "2023-01-18", 200), new Inventory(3002, "2023-01-16", 200),
-				new Inventory(78891, "2023-01-20", 200) };
+		Inventory[] ins = { new Inventory(26333, "16-01-2023", 2), new Inventory(90001, "16-01-2023", 200),
+				new Inventory(92331, "16-01-2023", 200), new Inventory(1001, "17-01-2023", 200),
+				new Inventory(10031, "16-01-2023", 200), new Inventory(30009, "16-01-2023", 200),
+				new Inventory(30044, "18-01-2023", 200), new Inventory(3002, "16-01-2023", 200),
+				new Inventory(78891, "20-01-2023", 200) };
 		Arrays.asList(ins).forEach(inv -> irepo.save(inv));
 		
-		  
+		 
 		
-		  Book book = new Book(26333, "BANG-Banglore", "CHN-Chennai", "2023-01-16", new Date(), 2500);
+		  Book book = new Book(263333, "BANG-Banglore", "CHN-Chennai", "16-01-2023", new Date());
 		  brepo.save(book);
 		  
 		  List<Passenger> passengers = new ArrayList<Passenger>();
