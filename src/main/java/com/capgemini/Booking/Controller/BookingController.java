@@ -1,7 +1,8 @@
 package com.capgemini.Booking.Controller;
 
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,14 +27,21 @@ import com.capgemini.Booking.Entity.Book;
 import com.capgemini.Booking.Entity.Inventory;
 import com.capgemini.Booking.Entity.Passenger;
 import com.capgemini.Booking.Exception.BookingException;
+import com.capgemini.Booking.Repository.BookingReposoitory;
 import com.capgemini.Booking.Service.BookingServiceImpl;
 import com.capgemini.Booking.VO.BookAndFlight;
 
+import jakarta.ws.rs.GET;
+
 @RestController
 @RequestMapping("api/book")
+@CrossOrigin
 public class BookingController 
 {
+    
 	
+	@Autowired
+	BookingReposoitory repo;
 	
 	@Autowired
 	BookingServiceImpl bookingServiceImpl;
@@ -51,15 +60,12 @@ public class BookingController
 
 		}
 		
-
-		
 	}
 	
 	@RequestMapping(value = "/getall",method = RequestMethod.GET)
 	public ResponseEntity<?> getAllBookingDetails()
 	{
 		return new ResponseEntity<> (bookingServiceImpl.getAllBookingDetails(),HttpStatus.OK);
-		
 	}
 	
 	@PostMapping("/post")
@@ -94,12 +100,13 @@ public class BookingController
     public ResponseEntity<?> Deletebyid(@PathVariable ("id") long id)
     {
 		try {
-        bookingServiceImpl.Deletebyid(id);
-        return new ResponseEntity<>("Deleted:"+id,HttpStatus.OK);
+       String m= bookingServiceImpl.Deletebyid(id);
+       
+        return new ResponseEntity<>(m,HttpStatus.OK);
 		}
 		catch(Exception e)
 		{
-			return new ResponseEntity<>("Please enter the correct the Booking Id",HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
 		}
     }
 	
@@ -110,18 +117,45 @@ public class BookingController
         return new ResponseEntity<Book>(upd,HttpStatus.CREATED);
     }
 	
-	@RequestMapping(value="/create" , method = RequestMethod.POST)
-	public ResponseEntity<?> book(@RequestBody Book record) throws BookingException{
+	
+	@RequestMapping(value="/create" , method = RequestMethod.POST, consumes= MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String,Object>> book(@RequestBody Book record) throws BookingException{
 		try {
 		System.out.println("Booking Request" + record); 
-		
-		return new ResponseEntity<>( bookingServiceImpl.book(record),HttpStatus.OK);
+		 ResponseEntity<?> book=bookingServiceImpl.book(record);
+		 Map map=new HashMap();
+		 map.put("msg", book);
+		return new ResponseEntity<>( map,HttpStatus.OK);
 		}
 		catch(BookingException e)
 		{
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+			Map map = new HashMap();
+			map.put("msggg", e.getMessage());
+			return new ResponseEntity<>(map, HttpStatus.BAD_REQUEST);
 		}
 	}
+	
+
+	@RequestMapping(value="/update/{bookingid}", method = RequestMethod.GET)
+	public Book updateStatus(@PathVariable long bookingid)
+	{
+		return bookingServiceImpl.updatestatus(bookingid);
+	}
+	
+	@GetMapping("checking/{bookid}/{flightdate}")
+	public ResponseEntity<?> getByIdAndFlightdate(@PathVariable long bookid, @PathVariable String flightdate)
+	{
+		Book b=repo.findByBookidAndFlightDate(bookid, flightdate);
+		if(b==null)
+		{
+			return new ResponseEntity<>("enter Correct details", HttpStatus.BAD_REQUEST);
+		}
+		long id=b.getBookId();
+		Book ub=bookingServiceImpl.updatestatus(id);
+		return new ResponseEntity<>(ub, HttpStatus.OK);
+		
+	}
+	
 	
 	
 	

@@ -33,7 +33,7 @@ public class Book
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	//@Column(name = "Book_id")
-	long BookId;
+	long bookid;
 	
 	private long flightNumber;
 	
@@ -158,21 +158,34 @@ public class Book
 
 
 	public long getBookId() {
-		return BookId;
+		return bookid;
 	}
 
 
 	public void setBookId(long bookId) {
-		BookId = bookId;
+		bookid = bookId;
 	}
 
 
 	@Override
 	public String toString() {
-		return "Book [BookId=" + BookId + ", flightNumber=" + flightNumber + ", origin=" + origin + ", destination="
+		return "Book [BookId=" + bookid + ", flightNumber=" + flightNumber + ", origin=" + origin + ", destination="
 				+ destination + ", flightDate=" + flightDate + ", bookingDate=" + bookingDate + ", TotalFare="
-				+ TotalFare + ", passenger=" + passenger + "]";
+				+ TotalFare + ", status=" + status + ", passenger=" + passenger + "]";
 	}
+
+
+	/*
+	 * @Override public String toString() { return "Book [BookId=" + BookId +
+	 * ", flightNumber=" + flightNumber + ", origin=" + origin + ", destination=" +
+	 * destination + ", flightDate=" + flightDate + ", bookingDate=" + bookingDate +
+	 * ", TotalFare=" + TotalFare + ", passenger=" + passenger + "]"; }
+	 */
+	
+	
+	
+	
+	
 	
 
 

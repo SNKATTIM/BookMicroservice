@@ -14,6 +14,7 @@ public class Fare {
     private String seatClass;
     private long flightFare; 
     private String flightDate;
+    
 	public long getId() {
 		return Id;
 	}

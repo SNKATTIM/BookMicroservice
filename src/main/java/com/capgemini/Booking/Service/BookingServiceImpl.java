@@ -58,35 +58,31 @@ public class BookingServiceImpl implements IBookingService
 		
 		Book books = bookingReposoitory.findById(id).get();
 		books.setTotalFare(books.getFare()*books.getPassenger().size());
-		      
 		return bookingReposoitory.findById(new Long(id)).get();
-		
-		
 		}
 
 	@Override
 	public List<Book> getAllBookingDetails() {
-		
 		return bookingReposoitory.findAll();
 	}
 
 
 	@Override
-	public void updatestatus(String status, long bookingid) {
-		//Book book = bookingReposoitory.findById(new Long (bookingid)).get();
-		//book.setStatus(status);
+	public Book updatestatus(long id) {
+	Book book=bookingReposoitory.findById(id).get();
+	book.setStatus(BookingStatus.CHECKED_IN); 
+	bookingReposoitory.saveAndFlush(book);
+	return book;
 	}
+	
 
 	@Override
 	public List<Inventory> getInventory() {
 		 return inventoryRepository.findAll();
-    
 	}
 
 	@Override
 	public List<Passenger> getPassenger() {
-		
-
 		return passengerRepository.findAll();
 	}
 
@@ -177,8 +173,6 @@ public class BookingServiceImpl implements IBookingService
 		return new ResponseEntity<>("bookingid=" +id +" "  + "and" + " " +"Fare=" +Pfare +" " +"and passengers="+lo,HttpStatus.ACCEPTED);
 	}
 
-	
-
 	@Override
 	public Book findByFlightNumber(long flightNumber) {
 		// TODO Auto-generated method stub
@@ -187,6 +181,14 @@ public class BookingServiceImpl implements IBookingService
 
 	@Override
 	public String Deletebyid(long id) {
+		Optional<Book> checkStatus=bookingReposoitory.findById(id);
+		if(checkStatus.isPresent())
+		{
+			Book b= checkStatus.get();
+			if(b.getStatus()==BookingStatus.CHECKED_IN)
+				return "Cant delete Booking Id" +" " +id +" " +"Because already CHECKED IN";
+		}
+		
 		   Optional<Book> enti=bookingReposoitory.findById(id);
 	        if(enti.isPresent())
 	        {
@@ -197,9 +199,8 @@ public class BookingServiceImpl implements IBookingService
 	        	long inventory=inv.getAvailable();
 	        	inv.setAvailable(inventory+size);
 	    		Flight flight = restTemplate.getForObject("http://localhost:8090/api/flight/update/" +newone.getFlightNumber() +"/" +newone.getFlightDate() +"/" +inv.getAvailable() , Flight.class);
-
 	            bookingReposoitory.deleteById(id);
-	            return "successfully deleted";
+	            return "successfully deleted:"+id;
 	        }
 	        else
 	        {

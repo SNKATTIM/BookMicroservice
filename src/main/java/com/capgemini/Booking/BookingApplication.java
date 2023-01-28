@@ -20,6 +20,7 @@ import com.capgemini.Booking.Repository.BookingReposoitory;
 import com.capgemini.Booking.Repository.InventoryRepository;
 import com.capgemini.Booking.Repository.PassengerRepository;
 import com.capgemini.Booking.Service.BookingServiceImpl;
+import com.capgemini.Booking.Service.BookingStatus;
 
 @SpringBootApplication
 public class BookingApplication implements CommandLineRunner {

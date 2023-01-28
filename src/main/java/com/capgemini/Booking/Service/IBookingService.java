@@ -17,7 +17,7 @@ public interface IBookingService
 	public List<Book> getAllBookingDetails();
 	public List<Inventory> getInventory();
 	public Book updateBooking(Book book);
-	public void updatestatus(String status,long bookingid);
+	public Book updatestatus(long bookingid);
 	public List<Passenger> getPassenger();
 	public BookAndFlight getFlightwithbook(long bookId);
 	public Book findByFlightNumber(long flightNumber);
