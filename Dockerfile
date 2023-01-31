@@ -1,4 +1,4 @@
 FROM openjdk:11
 EXPOSE 8090
-ADD target/booking-intigration booking-intigration.jar
+ADD target/Booking-0.0.1-SNAPSHOT Booking-0.0.1-SNAPSHOT.jar
 ENTRYPOINT ["java","-jar","/booking-intigration.jar"]
